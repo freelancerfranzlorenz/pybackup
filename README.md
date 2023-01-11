@@ -12,8 +12,8 @@ First of all, clone the file backup.py to your local computer.
 
 ## Step 2: Create config file
 - Open a console application in the folder of backup.py
-- Type in: python backup.py init
-- After the script executed, a new file backup.conf will be created on the current folder
+- Type in: `python backup.py init`
+- After the script executed, a new file `backup.conf` will be created on the current folder
 
 ## Step 3: Edit & Save configuration file
 IMPORTANT NOTE: Please use only slashes '/' and NO backslashes '\' for path/filenames.
@@ -37,7 +37,7 @@ NOTE: The delimiter between directories/folders is a semicolon ';'
 
 ## Step 4: Start the backup
 - Open a console application in the folder of backup.py
-- Type in: python backup.py backup
+- Type in: `python backup.py backup`
 
 # Appendix
 Example of a backup.config file:
