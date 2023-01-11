@@ -33,8 +33,28 @@ The backup config file, has the following sections and keys:
 |[Exclude]|foldername|One or more foldernames, which should be excluded from the backup|
 |[Prebackup]|cmdexec|executable command line commands, which will be executed BEFORE the backup starts|
 
+NOTE: The delimiter between directories/folders is a semicolon ';'
+
 ## Step 4: Start the backup
 - Open a console application in the folder of backup.py
 - Type in: python backup.py backup
 
+# Appendix
+Example of a backup.config file:
 
+```
+[Backup]
+drive = E
+
+[Include]
+directory = d:/
+
+[Exclude]
+directory = d:/programs;d:/github
+foldername = .git;.vscode
+
+[Prebackup]
+cmdexec = del d:/gnucash/*.log
+   del d:/gnucash/MyAccount.gnucash.*.gnucash
+   del d:/temp/*.tmp
+```
