@@ -45,18 +45,20 @@ class ConsoleLine :
             sLine = sRet
         return sLine
 
-    def print( self, sLine ) :
-        if self.fLogFile is not None :
-            self.fLogFile.write( sLine + "\n" )
+    def print( self, sLine, bWriteToLog=True ) :
+        if bWriteToLog :
+            if self.fLogFile is not None :
+                self.fLogFile.write( sLine + "\n" )
         if self.nLineLen > 0 :
             print( "" )
             self.nLineLen = 0
         print( self._limit( sLine ) )
         return
 
-    def overwrite( self, sLine ) :
-        if self.fLogFile is not None :
-            self.fLogFile.write( sLine + "\n" )
+    def overwrite( self, sLine, bWriteToLog=True ) :
+        if bWriteToLog :
+            if self.fLogFile is not None :
+                self.fLogFile.write( sLine + "\n" )
         sLine = self._limit( sLine )
         nLen = len( sLine )
         nClear = self.nLineLen - nLen
@@ -78,11 +80,11 @@ class Console( ConsoleLine ):
         self.init()
 
     def log( self, sLine ) :
-        self.print( "log : "+sLine )
+        self.print( "log : "+sLine, False )
         return
 
     def log_o( self, sLine ) :
-        self.overwrite( "log : "+sLine )
+        self.overwrite( "log : "+sLine, False )
         return
 
     def info( self, sLine ) :
@@ -102,9 +104,9 @@ class BackupScan( Console ) :
     # list of all scanned files
     lFiles = []
     # exclude directories
-    lExcludeDirs = [ "d:/programs", "d:/CardoOneDrive" ]
+    lExcludeDirs = []
     # exclude dirnames
-    lExcludeDirName = [ ".git" ]
+    lExcludeDirName = []
     #
 
     def __init__( self, classConsole ) :
@@ -115,7 +117,10 @@ class BackupScan( Console ) :
         bRet = False
         lDirs = sDirList.split( ";" )
         if len( lDirs ) > 0 :
-            self.lExcludeDirs = lDirs
+            for sDir in lDirs :
+                sDir = sDir.lower().strip()
+                if len( sDir ) > 0 :
+                    self.lExcludeDirs.append( sDir )
             bRet = True
         return bRet
 
@@ -123,7 +128,10 @@ class BackupScan( Console ) :
         bRet = False
         lDirs = sDirNames.split( ";" )
         if len( lDirs ) > 0 :
-            self.lExcludeDirName = lDirs
+            for sDir in lDirs :
+                sDir = sDir.lower().strip()
+                if len( sDir ) > 0 :
+                    self.lExcludeDirName.append( sDir )
             bRet = True
         return bRet
 
@@ -135,9 +143,9 @@ class BackupScan( Console ) :
                 sCurrDir = sItem.split( "/" ).pop()
                 if Entry.is_dir() :
                     if "$" not in Entry.name :
-                        if sItem in self.lExcludeDirs :
+                        if sItem.lower() in self.lExcludeDirs :
                             self.Out.log_o( "exclude dir '"+sItem+"'" )
-                        elif sCurrDir in self.lExcludeDirName :
+                        elif sCurrDir.lower() in self.lExcludeDirName :
                             self.Out.log_o( "exclude dir '"+sItem+"'" )
                         else :
                             self.Out.log_o( "scan dir '"+sItem+"'" )
@@ -255,11 +263,9 @@ def getBackupDrive() :
     return Config["Backup"]["Drive"][0]
 
 def getBackupFilename() :
-    global Config
     return getBackupDrive()+"://backup.files"
 
 def getBackupLogFilename() :
-    global Config
     return getBackupDrive()+"://backup.log"
 
 #   This function does the backup
@@ -280,6 +286,24 @@ def runBackup() :
         Output.error( "connect backup drive '"+sDrive+"' to your computer and restart script" )
     #
     return
+
+# This function executes the command line commands
+# that are set in the config file in section "Prebackup"
+# item "cmdexec".
+def runPrebackupCmds() :
+    global Config
+    try :
+        lCmds = Config["Prebackup"]["cmdexec"].split( "\n" )
+        for sCmd in lCmds :
+            sCmd = sCmd.strip()
+            if len( sCmd ) > 1 :
+                Output.info( "prebackup cmdexec '"+sCmd+"'" )
+                sCmd = sCmd.replace( "/", "\\" )
+                os.system( sCmd )
+        # for
+    except :
+        pass
+    return 
 
 #   This function will run the copy of the files,
 #   which are changed or new.
@@ -311,6 +335,8 @@ def runBackupCopy() :
 
 #-----------------------------------------------------------
 # MAIN
+
+# only for debug sys.argv.append( "check" )
 
 Parser = argparse.ArgumentParser()
 Parser.add_argument( "-c", "--config", help="configuration file", default="backup.config" )
@@ -347,6 +373,7 @@ else :
         if checkDrive( sDrive ) :
             Output.setLogFile( getBackupLogFilename() )
             Output.info( "backup drive '"+sDrive+"' is available" )
+            runPrebackupCmds()
             sFile = getBackupFilename()
             scanCurrent( sFile )
             Output.info( "write backup file '"+sFile+"'" )
@@ -359,6 +386,7 @@ else :
         if checkDrive( sDrive ) :
             Output.info( "backup drive '"+sDrive+"' is available" )
             Output.setLogFile( getBackupLogFilename() )
+            runPrebackupCmds()
             sFile = getBackupFilename()
             Output.info( "load backup file '"+sFile+"'" )
             PreviousScan.load( sFile )
