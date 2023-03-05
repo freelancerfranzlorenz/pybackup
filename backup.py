@@ -22,7 +22,7 @@ class ConsoleLine :
   
   def __init__( self ) :
     Size = os.get_terminal_size()
-    self.nCols = int( Size.columns )
+    self.nCols = int( Size.columns )-4
     self.nCols2 =  int( self.nCols/2 )-4
 
   def setLogFile( self, sFilename ) :
@@ -78,9 +78,6 @@ class ConsoleLine :
 class Console( ConsoleLine ):
     bLog = True
     bInf = True
-
-    def __init__( self ) :
-        self.init()
 
     def log( self, sLine ) :
         self.print( "log : "+sLine, False )
