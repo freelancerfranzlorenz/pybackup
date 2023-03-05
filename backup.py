@@ -15,62 +15,65 @@ import shutil
 #-----------------------------------------------------------
 # CLASS
 class ConsoleLine :
-    nLineLen = 0
-    nCols = 80
-    nCols2 = 38
-    fLogFile = None
-    
-    def init( self ) :
-        Size = os.get_terminal_size()
-        nCols = int( Size.columns )
-        nCols2 =  int( self.nCols/2 )-4
+  nLineLen = 0
+  nCols = 80
+  nCols2 = 38
+  fLogFile = None
+  
+  def __init__( self ) :
+    Size = os.get_terminal_size()
+    self.nCols = int( Size.columns )
+    self.nCols2 =  int( self.nCols/2 )-4
 
-    def setLogFile( self, sFilename ) :
-        try :
-            self.fLogFile = open( sFilename, "at" )
-            sDateTime = datetime.today().strftime( "%Y-%m-%d %H:%M:%S" )
-            self.fLogFile.write( "\n" )
-            self.fLogFile.write( "-"*60 )
-            self.fLogFile.write( "\n" )
-            self.fLogFile.write( "backup log of "+sDateTime+"\n" )
-        except :
-            self.fLogFile = None
-        return
+  def setLogFile( self, sFilename ) :
+    try :
+      self.fLogFile = open( sFilename, "at", encoding="utf-8" )
+      sDateTime = datetime.today().strftime( "%Y-%m-%d %H:%M:%S" )
+      self.fLogFile.write( "\n" )
+      self.fLogFile.write( "-"*60 )
+      self.fLogFile.write( "\n" )
+      self.fLogFile.write( "backup log of "+sDateTime+"\n" )
+    except :
+      self.fLogFile = None
+    return
 
-    def _limit( self, sLine ) :
-        if len( sLine ) > self.nCols :
-            sRet  = sLine[1:self.nCols2]
-            sRet += "..."
-            sRet += sLine[-self.nCols2:]
-            sLine = sRet
-        return sLine
+  def _limit( self, sLine ) :
+    if len( sLine ) > self.nCols :
+      sRet  = sLine[1:self.nCols2]
+      sRet += "..."
+      sRet += sLine[-self.nCols2:]
+      sLine = sRet
+    return sLine
 
-    def print( self, sLine, bWriteToLog=True ) :
-        if bWriteToLog :
-            if self.fLogFile is not None :
-                self.fLogFile.write( sLine + "\n" )
-        if self.nLineLen > 0 :
-            print( "" )
-            self.nLineLen = 0
-        print( self._limit( sLine ) )
-        return
+  def print( self, sLine, bWriteToLog=True ) :
+    if bWriteToLog :
+      if self.fLogFile is not None :
+        self.fLogFile.write( sLine + "\n" )
+      if self.nLineLen > 0 :
+        print( "" )
+        self.nLineLen = 0
+    print( self._limit( sLine ) )
+    return
 
-    def overwrite( self, sLine, bWriteToLog=True ) :
-        if bWriteToLog :
-            if self.fLogFile is not None :
-                self.fLogFile.write( sLine + "\n" )
-        sLine = self._limit( sLine )
-        nLen = len( sLine )
-        nClear = self.nLineLen - nLen
-        if nClear > 0 :
-            sLine += " "*nClear
-        print( sLine, end='\r' )
-        self.nLineLen = nLen
+  def overwrite( self, sLine, bWriteToLog=True ) :
+    if bWriteToLog :
+      if self.fLogFile is not None :
+          self.fLogFile.write( sLine + "\n" )
+    sLine = self._limit( sLine )
+    if self.nLineLen > 0 :
+      print( "\b"*self.nLineLen, end='' )
+      print( " "*self.nLineLen, end='' )
+      print( "\b"*self.nLineLen, end='' )
+    print( sLine, end='\r' )
+    self.nLineLen = len( sLine )
+    return
 
-    def __del__( self ) :
-        if self.fLogFile is not None :
-            self.fLogFile.close()
+  def __del__( self ) :
+    if self.fLogFile is not None :
+      self.fLogFile.close()
+    return
 # end-of-class
+
 
 class Console( ConsoleLine ):
     bLog = True
