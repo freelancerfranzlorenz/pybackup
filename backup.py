@@ -23,7 +23,7 @@ class ConsoleLine :
   def __init__( self ) :
     Size = os.get_terminal_size()
     self.nCols = int( Size.columns )-4
-    self.nCols2 =  int( self.nCols/2 )-4
+    self.nCols2 =  int( self.nCols/2 )-2
 
   def setLogFile( self, sFilename ) :
     try :
@@ -39,7 +39,7 @@ class ConsoleLine :
 
   def _limit( self, sLine ) :
     if len( sLine ) > self.nCols :
-      sRet  = sLine[1:self.nCols2]
+      sRet  = sLine[0:self.nCols2]
       sRet += "..."
       sRet += sLine[-self.nCols2:]
       sLine = sRet
@@ -73,7 +73,6 @@ class ConsoleLine :
       self.fLogFile.close()
     return
 # end-of-class
-
 
 class Console( ConsoleLine ):
     bLog = True
